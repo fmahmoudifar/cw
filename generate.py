@@ -99,7 +99,15 @@ class CrosswordCreator():
         (Remove any values that are inconsistent with a variable's unary
          constraints; in this case, the length of the word.)
         """
-        raise NotImplementedError
+        # raise NotImplementedError
+
+        for domain in self.domains.keys():
+            removeWord = []
+            for word in self.domains[domain]:
+                if domain.length != len(word):
+                    removeWord.append(word)
+            for word in removeWord:
+                self.domains[domain].remove(word)
 
     def revise(self, x, y):
         """
@@ -110,7 +118,30 @@ class CrosswordCreator():
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
         """
-        raise NotImplementedError
+        # raise NotImplementedError
+
+        revision = False
+        overlap = self.crossword.overlaps[x, y]
+
+        if overlap is None:
+            return False
+        else:
+            i = overlap[0]
+            j = overlap[1]
+            remWords = []
+
+            for X in self.domains[x]:
+                for Y in self.domains[y]:
+                    if X[i] == Y[j]:
+                        break
+                else:
+                    remWords.append(X)
+                    revision = True
+
+            for word in remWords:
+                self.domains[x].remove(word)
+
+            return revision
 
     def ac3(self, arcs=None):
         """
@@ -121,7 +152,23 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        raise NotImplementedError
+        # raise NotImplementedError
+
+        if not arcs:
+            arcs = []
+            for x in self.domains:
+                for y in self.domains:
+                    if x != y:
+                        arcs.append((x, y))
+
+        while arcs:
+            x, y = arcs.pop()
+            if self.revise(x, y):
+                if not self.domains[x]:
+                    return False
+                for z in self.crossword.neighbors(x) - {y}:
+                    arcs.append((z, x))
+        return True
 
     def assignment_complete(self, assignment):
         """
