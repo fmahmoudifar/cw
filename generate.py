@@ -194,7 +194,7 @@ class CrosswordCreator():
         # raise NotImplementedError
 
         defValue = []
-
+        #defValue = set()
         for variable1 in assignment:
             x = assignment[variable1]
             if x in defValue:
