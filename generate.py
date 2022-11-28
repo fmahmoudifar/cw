@@ -175,7 +175,15 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        raise NotImplementedError
+        # raise NotImplementedError
+
+        for domain in self.domains.keys():
+            if domain not in assignment.keys():
+                return False
+            else:
+                if assignment[domain] is None:
+                    return False
+        return True
 
     def consistent(self, assignment):
         """
