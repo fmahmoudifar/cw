@@ -184,6 +184,7 @@ class CrosswordCreator():
                 if assignment[domain] is None:
                     return False
         return True
+        # working on it later
 
     def consistent(self, assignment):
         """
