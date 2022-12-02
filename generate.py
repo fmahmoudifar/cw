@@ -234,7 +234,29 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        raise NotImplementedError
+        # raise NotImplementedError
+
+        status = 0
+        result = 10000
+        for x in self.domains.keys():
+            if x in assignment:
+                continue
+            else:
+                if result > len(self.domains[x]):
+                    result = len(self.domains[x])
+                    tempVar = x
+                    if self.crossword.neighbors(x) is None:
+                        status = 0
+                    else:
+                        status = len(self.crossword.neighbors(x))
+                elif result == len(self.domains[x]):
+                    if self.crossword.neighbors(x) is not None:
+                        if status < len(self.crossword.neighbors(x)):
+                            result = len(self.domains[x])
+                            tempVar = x
+                            status = len(self.crossword.neighbors(x))
+                            # fix later
+        return tempVar
 
     def backtrack(self, assignment):
         """
