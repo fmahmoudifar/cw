@@ -102,13 +102,13 @@ class CrosswordCreator():
         """
         # raise NotImplementedError
 
-        for domain in self.domains.keys():
+        for variable in self.variables.keys():
             removeWord = []
-            for word in self.domains[domain]:
-                if domain.length != len(word):
+            for word in self.variables[variable]:
+                if variable.length != len(word):
                     removeWord.append(word)
             for word in removeWord:
-                self.domains[domain].remove(word)
+                self.variables[variable].remove(word)
 
     def revise(self, x, y):
         """
@@ -121,28 +121,23 @@ class CrosswordCreator():
         """
         # raise NotImplementedError
 
-        revision = False
+        removeWords = []
         overlap = self.crossword.overlaps[x, y]
-
         if overlap is None:
             return False
         else:
-            i = overlap[0]
-            j = overlap[1]
-            remWords = []
-
-            for X in self.domains[x]:
-                for Y in self.domains[y]:
-                    if X[i] == Y[j]:
-                        break
-                else:
-                    remWords.append(X)
+            a, b = overlap
+        for wirdx in self.domains[x]:
+            revision = False
+            for wordy in self.domains[y]:
+                if wirdx != wordy and wirdx[a] == wordy[b]:
                     revision = True
-
-            for word in remWords:
-                self.domains[x].remove(word)
-
-            return revision
+                    break
+            if not revision:
+                removeWords.append(wirdx)
+        for word in removeWords:
+            self.domains[x].remove(word)
+        return len(removeWords) > 0
 
     def ac3(self, arcs=None):
         """
@@ -169,6 +164,8 @@ class CrosswordCreator():
                     return False
                 for z in self.crossword.neighbors(x) - {y}:
                     arcs.append((z, x))
+            else:
+                break
         return True
 
     def assignment_complete(self, assignment):
@@ -209,6 +206,7 @@ class CrosswordCreator():
                     if not self.overlap_satisfied(variable1, variable2, x, y):
                         return False
         return True
+        # check later
 
     def order_domain_values(self, var, assignment):
         """
@@ -218,14 +216,19 @@ class CrosswordCreator():
         that rules out the fewest values among the neighbors of `var`.
         """
         # raise NotImplementedError
-        values = {}
-
-        for domVar in self.domains[var]:
-            for crossNeigh in self.crossword.neighbors(var):
-                for domValue in self.domains[crossNeigh]:
-                    if not self.overlap_satisfied(var, crossNeigh, domVar, domValue):
-                        values[domVar] += 1
-        return sorted([x for x in values], key=lambda x: values[x])
+        data = {}
+        variables = self.domains[var]
+        neighbors = self.crossword.neighbors(var)
+        for variable in variables:
+            if variable in assignment:
+                continue
+            else:
+                counter = 0
+                for neighbor in neighbors:
+                    if variable in self.domains[neighbor]:
+                        counter = counter + 1
+                data[variable] = counter
+        return sorted(data, key=lambda key: data[key])
 
     def select_unassigned_variable(self, assignment):
         """
@@ -237,30 +240,9 @@ class CrosswordCreator():
         """
         # raise NotImplementedError
 
-        status = 0
-        result = 10000
-        for x in self.domains.keys():
-            if x in assignment:
-                continue
-            else:
-                if result > len(self.domains[x]):
-                    result = len(self.domains[x])
-                    tempVar = x
-                    if self.crossword.neighbors(x) is None:
-                        status = 0
-                    else:
-                        status = len(self.crossword.neighbors(x))
-                elif result == len(self.domains[x]):
-                    if self.crossword.neighbors(x) is not None:
-                        if status < len(self.crossword.neighbors(x)):
-                            result = len(self.domains[x])
-                            tempVar = x
-                            status = len(self.crossword.neighbors(x))
-                        else:
-                            tempVar = x
-                            result = len(self.domains[x])
-                            status = 0
-        return tempVar
+        for variable in self.crossword.variables:
+            if variable not in assignment.keys():
+                return variable
 
     def backtrack(self, assignment):
         """
@@ -297,6 +279,7 @@ class CrosswordCreator():
             del assignment[var]
             self.domains = deepcopy(self.domains)
         return None
+        # will check later
 
 
 def main():
