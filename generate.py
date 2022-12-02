@@ -1,7 +1,8 @@
-from copy import deepcopy
+
 import sys
 
 from crossword import *
+import copy
 
 
 class CrosswordCreator():
@@ -102,13 +103,13 @@ class CrosswordCreator():
         """
         # raise NotImplementedError
 
-        for variable in self.variables.keys():
-            removeWord = []
-            for word in self.variables[variable]:
-                if variable.length != len(word):
-                    removeWord.append(word)
-            for word in removeWord:
-                self.variables[variable].remove(word)
+        for domain in self.domains.keys():
+            exWord = []
+            for word in self.domains[domain]:
+                if domain.length != len(word):
+                    exWord.append(word)
+            for word in exWord:
+                self.domains[domain].remove(word)
 
     def revise(self, x, y):
         """
@@ -182,7 +183,6 @@ class CrosswordCreator():
                 if assignment[domain] is None:
                     return False
         return True
-        # working on it later
 
     def consistent(self, assignment):
         """
@@ -191,22 +191,21 @@ class CrosswordCreator():
         """
         # raise NotImplementedError
 
-        defValue = []
-        #defValue = set()
-        for variable1 in assignment:
-            x = assignment[variable1]
-            if x in defValue:
+        for varx in assignment:
+            wordx = assignment[varx]
+            if varx.length != len(wordx):
                 return False
-            defValue.append(x)
-            if len(x) != variable1.length:
-                return False
-            for variable2 in self.crossword.neighbors(variable1):
-                if variable2 in assignment:
-                    y = assignment[variable2]
-                    if not self.overlap_satisfied(variable1, variable2, x, y):
+            for vary in assignment:
+                wordy = assignment[vary]
+                if varx != vary:
+                    if wordx == wordy:
                         return False
+                    overlap = self.crossword.overlaps[varx, vary]
+                    if overlap is not None:
+                        a, b = overlap
+                        if wordx[a] != wordy[b]:
+                            return False
         return True
-        # check later
 
     def order_domain_values(self, var, assignment):
         """
@@ -258,28 +257,16 @@ class CrosswordCreator():
         if self.assignment_complete(assignment):
             return assignment
         var = self.select_unassigned_variable(assignment)
-        for val in self.order_domain_values(var, assignment):
-            assignment[var] = val
-            if self.consistent(assignment):
+        for value in self.order_domain_values(var, assignment):
+            testAss = copy.deepcopy(assignment)
+            testAss[var] = value
+            if self.consistent(testAss):
+                assignment[var] = value
                 result = self.backtrack(assignment)
-                if result:
+                if result is not None:
                     return result
-            del assignment[var]
-        else:
-            var = self.select_unassigned_variable(assignment)
-        for val in self.order_domain_values(var, assignment):
-            assignment[var] = val
-            if self.consistent(assignment):
-                self.domains[var] = {val}
-                self.ac3([(other_var, var)
-                         for other_var in self.crossword.neighbors(var)])
-                result = self.backtrack_ac(assignment)
-                if result:
-                    return result
-            del assignment[var]
-            self.domains = deepcopy(self.domains)
+            assignment.pop(var, None)
         return None
-        # will check later
 
 
 def main():
