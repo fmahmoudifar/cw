@@ -1,3 +1,4 @@
+from copy import deepcopy
 import sys
 
 from crossword import *
@@ -267,7 +268,32 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        raise NotImplementedError
+        # raise NotImplementedError
+
+        if self.assignment_complete(assignment):
+            return assignment
+        var = self.select_unassigned_variable(assignment)
+        for val in self.order_domain_values(var, assignment):
+            assignment[var] = val
+            if self.consistent(assignment):
+                result = self.backtrack(assignment)
+                if result:
+                    return result
+            del assignment[var]
+        else:
+            var = self.select_unassigned_variable(assignment)
+        for val in self.order_domain_values(var, assignment):
+            assignment[var] = val
+            if self.consistent(assignment):
+                self.domains[var] = {val}
+                self.ac3([(other_var, var)
+                         for other_var in self.crossword.neighbors(var)])
+                result = self.backtrack_ac(assignment)
+                if result:
+                    return result
+            del assignment[var]
+            self.domains = deepcopy(self.domains)
+        return None
 
 
 def main():
