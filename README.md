@@ -1,1 +1,6 @@
 "# cw" 
+
+Hints
+For order_domain_values and select_unassigned_variable, it may be helpful to implement them first without worrying about the heuristics, and then add heuristics later. Your algorithm will still work: it just may end up exploring more assignments than it needs to before finding a solution.
+To run your program, you can run a command like python generate.py data/structure1.txt data/words1.txt, specifying a structure file and a words file. If an assignment is possible, you should see the resulting assignment printed. You may also add an additional command-line argument for an image file, as by running python generate.py data/structure1.txt data/words1.txt output.png, to generate an image representation of the resulting crossword puzzle as well.
+The Crossword class has a neighbors function you can use to access all of the neighbors (i.e., overlapping variables) of a particular variable. Feel free to use that any time you need to determine the neighbors of a particular variable!

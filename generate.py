@@ -256,7 +256,10 @@ class CrosswordCreator():
                             result = len(self.domains[x])
                             tempVar = x
                             status = len(self.crossword.neighbors(x))
-                            # fix later
+                        else:
+                            tempVar = x
+                            result = len(self.domains[x])
+                            status = 0
         return tempVar
 
     def backtrack(self, assignment):
